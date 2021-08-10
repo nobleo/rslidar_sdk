@@ -54,25 +54,34 @@ int main(int argc, char** argv)
   RS_TITLE << "**********                                    **********" << RS_REND;
   RS_TITLE << "********************************************************" << RS_REND;
 
+  std::string config_file = (std::string)PROJECT_PATH + "/config/config.yaml";
+
+#ifdef ROS_FOUND  ///< if ROS is found, call the ros::init function and load the config path
+  ros::init(argc, argv, "rslidar_sdk_node", ros::init_options::NoSigintHandler);
+  ros::NodeHandle nh("~");
+  nh.param("rslidar_config_file", config_file, config_file);
+#endif
+
+#ifdef ROS2_FOUND  ///< if ROS2 is found, call the rclcpp::init function
+  rclcpp::init(argc, argv);
+  auto node = std::make_shared<rclcpp::Node>("rslidar_sdk_node");
+  node->declare_parameter("rslidar_config_file", config_file);
+  node->get_parameter("rslidar_config_file", config_file);
+#endif
+
+  RS_INFO << "Using config file " << config_file << RS_REND;
+
   std::shared_ptr<AdapterManager> demo_ptr = std::make_shared<AdapterManager>();
   YAML::Node config;
   try
   {
-    config = YAML::LoadFile((std::string)PROJECT_PATH + "/config/config.yaml");
+    config = YAML::LoadFile(config_file);
   }
   catch (...)
   {
     RS_ERROR << "Config file format wrong! Please check the format(e.g. indentation) " << RS_REND;
     return -1;
   }
-
-#ifdef ROS_FOUND  ///< if ROS is found, call the ros::init function
-  ros::init(argc, argv, "rslidar_sdk_node", ros::init_options::NoSigintHandler);
-#endif
-
-#ifdef ROS2_FOUND  ///< if ROS2 is found, call the rclcpp::init function
-  rclcpp::init(argc, argv);
-#endif
 
   demo_ptr->init(config);
   demo_ptr->start();
