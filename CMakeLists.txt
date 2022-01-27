@@ -32,7 +32,6 @@ if(roscpp_FOUND)
   message("-- ROS Found, Ros Support is turned On!")
   message(=============================================================)
   add_definitions(-DROS_FOUND)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/package_ros1.xml ${CMAKE_CURRENT_SOURCE_DIR}/package.xml COPYONLY)
 
   find_package(roslib QUIET)
   include_directories(${roscpp_INCLUDE_DIRS} ${roslib_INCLUDE_DIRS})
@@ -46,12 +45,11 @@ endif(roscpp_FOUND)
 
 #ROS2#
 find_package(rclcpp QUIET)
-if(rclcpp_FOUND AND ${COMPILE_METHOD} STREQUAL "COLCON")
+if(rclcpp_FOUND)
   message(=============================================================)
   message("-- ROS2 Found, Ros2 Support is turned On!")
   message(=============================================================)
   add_definitions(-DROS2_FOUND)
-  configure_file(${CMAKE_CURRENT_SOURCE_DIR}/package_ros2.xml ${CMAKE_CURRENT_SOURCE_DIR}/package.xml COPYONLY)
   set(CMAKE_CXX_STANDARD 14)
 
   find_package(ament_cmake REQUIRED)
@@ -61,11 +59,11 @@ if(rclcpp_FOUND AND ${COMPILE_METHOD} STREQUAL "COLCON")
   find_package(pcl_conversions REQUIRED)
   include_directories(${rclcpp_INCLUDE_DIRS})
 
-else(rclcpp_FOUND AND ${COMPILE_METHOD} STREQUAL "COLCON")
+else(rclcpp_FOUND)
   message(=============================================================)
   message("-- ROS2 Not Found, Ros2 Support is turned Off!")
   message(=============================================================)
-endif(rclcpp_FOUND AND ${COMPILE_METHOD} STREQUAL "COLCON")
+endif(rclcpp_FOUND)
 
 #Protobuf#
 find_package(Protobuf QUIET)
@@ -100,8 +98,8 @@ link_directories(${PCL_LIBRARY_DIRS})
 add_definitions(${PCL_DEFINITIONS})
 
 #Catkin#
-if(${COMPILE_METHOD} STREQUAL "CATKIN")
-  add_definitions(-DRUN_IN_ROS_WORKSPACE)
+find_package(catkin QUIET)
+if(catkin_FOUND)
   find_package(catkin REQUIRED
     COMPONENTS
       roscpp
@@ -110,7 +108,7 @@ if(${COMPILE_METHOD} STREQUAL "CATKIN")
       pcl_ros
       pcl_conversions
   )
-
+  add_definitions(-DRUN_IN_ROS_WORKSPACE)
   catkin_package(
     CATKIN_DEPENDS
       roscpp
@@ -118,7 +116,7 @@ if(${COMPILE_METHOD} STREQUAL "CATKIN")
       roslib
       pcl_conversions
   )
-endif(${COMPILE_METHOD} STREQUAL "CATKIN")
+endif(catkin_FOUND)
 
 #Include directory#
 include_directories(${PROJECT_SOURCE_DIR}/src)
@@ -171,27 +169,25 @@ else(NOT PROTOC MATCHES "NOTFOUND" AND Protobuf_FOUND)
 endif(NOT PROTOC MATCHES "NOTFOUND" AND Protobuf_FOUND)
 
 #Ros#
-if(roscpp_FOUND)
+if(catkin_FOUND)
   target_link_libraries(rslidar_sdk_node ${ROS_LIBS})
-  if(${COMPILE_METHOD} STREQUAL "CATKIN")
-    install(TARGETS rslidar_sdk_node
-            RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-            LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-            ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
-    install(DIRECTORY launch/
-            DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
-            PATTERN ".svn" EXCLUDE)
-    install(DIRECTORY config/
-            DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/config
-            PATTERN ".svn" EXCLUDE)
-    install(DIRECTORY rviz/
-            DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/rviz
-            PATTERN ".svn" EXCLUDE)
-  endif()
-endif(roscpp_FOUND)
+  install(TARGETS rslidar_sdk_node
+          RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+          LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+          ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION})
+  install(DIRECTORY launch/
+          DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/launch
+          PATTERN ".svn" EXCLUDE)
+  install(DIRECTORY config/
+          DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/config
+          PATTERN ".svn" EXCLUDE)
+  install(DIRECTORY rviz/
+          DESTINATION ${CATKIN_PACKAGE_SHARE_DESTINATION}/rviz
+          PATTERN ".svn" EXCLUDE)
+endif(catkin_FOUND)
 
 #Ros2#
-if(rclcpp_FOUND AND ${COMPILE_METHOD} STREQUAL "COLCON")
+if(rclcpp_FOUND)
   ament_target_dependencies(rslidar_sdk_node rclcpp sensor_msgs std_msgs rslidar_msg)
   install(TARGETS
     rslidar_sdk_node
@@ -203,4 +199,4 @@ if(rclcpp_FOUND AND ${COMPILE_METHOD} STREQUAL "COLCON")
     DESTINATION share/${PROJECT_NAME}
   )
   ament_package()
-endif(rclcpp_FOUND AND ${COMPILE_METHOD} STREQUAL "COLCON")
+endif(rclcpp_FOUND)
