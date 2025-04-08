@@ -45,7 +45,7 @@ if(${ENABLE_SOURCE_PACKET_LEGACY})
   add_definitions("-DENABLE_SOURCE_PACKET_LEGACY")
 endif(${ENABLE_SOURCE_PACKET_LEGACY})
 
-option(ENABLE_IMU_DATA_PARSE           "Enable imu data parse" OFF)
+option(ENABLE_IMU_DATA_PARSE           "Enable imu data parse" ON)
 if(${ENABLE_IMU_DATA_PARSE})
 
   message(=============================================================)
@@ -114,8 +114,8 @@ if(roscpp_FOUND)
     sensor_msgs
     roslib)
 
-  catkin_package(CATKIN_DEPENDS 
-    sensor_msgs 
+  catkin_package(CATKIN_DEPENDS
+    sensor_msgs
     roslib)
 
 else(roscpp_FOUND)
@@ -141,7 +141,7 @@ if(rclcpp_FOUND)
   find_package(ament_cmake REQUIRED)
   find_package(sensor_msgs REQUIRED)
   find_package(rslidar_msg REQUIRED)
-  find_package(std_msgs REQUIRED)                      
+  find_package(std_msgs REQUIRED)
 
 else(rclcpp_FOUND)
   message(=============================================================)
@@ -168,14 +168,14 @@ add_executable(rslidar_sdk_node
                node/rslidar_sdk_node.cpp
                src/manager/node_manager.cpp)
 
-target_link_libraries(rslidar_sdk_node                   
+target_link_libraries(rslidar_sdk_node
                       ${YAML_CPP_LIBRARIES}
                       ${rs_driver_LIBRARIES})
 
 #Ros#
 if(roscpp_FOUND)
 
-  target_link_libraries(rslidar_sdk_node 
+  target_link_libraries(rslidar_sdk_node
     ${ROS_LIBS})
 
   install(TARGETS rslidar_sdk_node
@@ -188,10 +188,10 @@ endif(roscpp_FOUND)
 #Ros2#
 if(rclcpp_FOUND)
 
-  ament_target_dependencies(rslidar_sdk_node 
-    rclcpp 
-    std_msgs 
-    sensor_msgs 
+  ament_target_dependencies(rslidar_sdk_node
+    rclcpp
+    std_msgs
+    sensor_msgs
     rslidar_msg)
 
   install(TARGETS
